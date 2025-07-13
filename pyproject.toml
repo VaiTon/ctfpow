@@ -9,7 +9,7 @@ description = "A Python implementation of the redpwn PoW challenge"
 readme = "README.md"
 authors = [{ name = "VaiTon", email = "eyadlorenzo@gmail.com" }]
 requires-python = ">=3.11"
-dependencies = ["gmpy2>=2.2.1"]
+dependencies = []
 
 [project.scripts]
 ctfpow = "ctfpow.cli:main"
@@ -19,4 +19,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [dependency-groups]
-dev = ["pytest>=8.4.1"]
+dev = [
+    "pytest>=8.4.1",
+    "pytest-cov>=6.2.1",
+]

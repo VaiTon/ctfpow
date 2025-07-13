@@ -5,87 +5,85 @@
 import base64
 import struct
 import secrets
-import gmpy2
 from typing import Optional, Tuple
-
 
 VERSION = "s"
 
 # Initialize constants for modular arithmetic (matching Go implementation)
 # mod = 2^1279 - 1
 # exp = 2^1277
-MOD = gmpy2.mpz((1 << 1279) - 1)
-EXP = gmpy2.mpz(1 << 1277)
-ONE = gmpy2.mpz(1)
-TWO = gmpy2.mpz(2)
+MOD = (1 << 1279) - 1
+EXP = 1 << 1277
+ONE = 1
+TWO = 2
 
 
 class Challenge:
     """ctfpow Challenge implementation"""
 
-    def __init__(self, difficulty: int, x: gmpy2.mpz):
+    def __init__(self, difficulty: int, x: int):
         self.d = difficulty
         self.x = x
 
     def __str__(self) -> str:
         """Encode the challenge in ctfpow format"""
         # Encode difficulty as 4-byte big-endian
-        d_bytes = struct.pack('>I', self.d)
-        d_b64 = base64.b64encode(d_bytes).decode('ascii')
+        d_bytes = struct.pack(">I", self.d)
+        d_b64 = base64.b64encode(d_bytes).decode("ascii")
 
         # Encode x as bytes
-        x_bytes = self.x.to_bytes((self.x.bit_length() + 7) // 8, 'big') if self.x > 0 else b'\x00'
-        x_b64 = base64.b64encode(x_bytes).decode('ascii')
+        x_bytes = (
+            self.x.to_bytes((self.x.bit_length() + 7) // 8, "big")
+            if self.x > 0
+            else b"\x00"
+        )
+        x_b64 = base64.b64encode(x_bytes).decode("ascii")
 
         return f"{VERSION}.{d_b64}.{x_b64}"
 
     def solve(self) -> str:
         """Solve the challenge and return solution proof"""
-        x = gmpy2.mpz(self.x)  # Copy to avoid mutation
+        x = int(self.x)  # Copy to avoid mutation
 
         for i in range(self.d):
-            x = gmpy2.powmod(x, EXP, MOD)
+            x = pow(x, EXP, MOD)
             x = x ^ ONE
 
         # Encode solution
-        y_bytes = x.to_bytes((x.bit_length() + 7) // 8, 'big') if x > 0 else b'\x00'
-        y_b64 = base64.b64encode(y_bytes).decode('ascii')
+        y_bytes = x.to_bytes((x.bit_length() + 7) // 8, "big") if x > 0 else b"\x00"
+        y_b64 = base64.b64encode(y_bytes).decode("ascii")
 
         return f"{VERSION}.{y_b64}"
 
     def check(self, solution: str) -> Tuple[bool, Optional[str]]:
         """Check if solution is valid"""
-        try:
-            y = _decode_solution(solution)
-            if y is None:
-                return False, "invalid solution format"
+        y = _decode_solution(solution)
+        if y is None:
+            return False, "invalid solution format"
 
-            # Reverse the solve operation
-            for i in range(self.d):
-                y = y ^ ONE
-                y = gmpy2.powmod(y, TWO, MOD)
+        # Reverse the solve operation
+        for i in range(self.d):
+            y = y ^ ONE
+            y = pow(y, TWO, MOD)
 
-            x = gmpy2.mpz(self.x)  # Copy to avoid mutation
+        x = int(self.x)  # Copy to avoid mutation
 
-            # Check if y matches x or its complement in the field
-            if x == y:
-                return True, None
+        # Check if y matches x or its complement in the field
+        if x == y:
+            return True, None
 
-            x_complement = MOD - self.x
-            if x_complement == y:
-                return True, None
+        x_complement = MOD - self.x
+        if x_complement == y:
+            return True, None
 
-            return False, "solution does not match challenge"
-
-        except Exception as e:
-            return False, f"error checking solution: {str(e)}"
+        return False, "solution does not match challenge"
 
 
 def generate_challenge(difficulty: int) -> Challenge:
     """Generate a new random challenge"""
     # Generate 16 random bytes (128 bits)
     random_bytes = secrets.token_bytes(16)
-    x = gmpy2.mpz.from_bytes(random_bytes, 'big')
+    x = int.from_bytes(random_bytes, "big")
 
     return Challenge(difficulty, x)
 
@@ -94,9 +92,9 @@ def decode_challenge(challenge_str: str) -> Optional[Challenge]:
     """Decode a challenge string into a Challenge object"""
     try:
         # Must have exactly two dots (i.e., three parts)
-        if challenge_str.count('.') != 2:
+        if challenge_str.count(".") != 2:
             return None
-        parts = challenge_str.split('.', 2)
+        parts = challenge_str.split(".", 2)
         if len(parts) != 3 or parts[0] != VERSION:
             return None
 
@@ -106,12 +104,12 @@ def decode_challenge(challenge_str: str) -> Optional[Challenge]:
             return None
 
         # Pad with zeros if needed
-        d_bytes = d_bytes.rjust(4, b'\x00')
-        difficulty = struct.unpack('>I', d_bytes)[0]
+        d_bytes = d_bytes.rjust(4, b"\x00")
+        difficulty = struct.unpack(">I", d_bytes)[0]
 
         # Decode x
         x_bytes = base64.b64decode(parts[2])
-        x = gmpy2.mpz.from_bytes(x_bytes, 'big') if x_bytes else gmpy2.mpz(0)
+        x = int.from_bytes(x_bytes, "big") if x_bytes else 0
 
         return Challenge(difficulty, x)
 
@@ -119,24 +117,18 @@ def decode_challenge(challenge_str: str) -> Optional[Challenge]:
         return None
 
 
-def _decode_solution(solution_str: str) -> Optional[gmpy2.mpz]:
-    """Decode a solution string into an mpz integer"""
+def _decode_solution(solution_str: str) -> Optional[int]:
+    """Decode a solution string into an int"""
     try:
-        parts = solution_str.split('.', 1)
+        parts = solution_str.split(".", 1)
         if len(parts) != 2 or parts[0] != VERSION:
             return None
 
         y_bytes = base64.b64decode(parts[1])
-        return gmpy2.mpz.from_bytes(y_bytes, 'big') if y_bytes else gmpy2.mpz(0)
+        return int.from_bytes(y_bytes, "big") if y_bytes else 0
 
     except Exception:
         return None
-
-
-# Convenience functions for easier usage
-def create_challenge(difficulty: int) -> Challenge:
-    """Create a new challenge with given difficulty"""
-    return generate_challenge(difficulty)
 
 
 def verify_solution(challenge_str: str, solution_str: str) -> bool:

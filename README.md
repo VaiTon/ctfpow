@@ -6,13 +6,19 @@ SPDX-License-Identifier: MIT
 
 # ctfpow
 
-A Python implementation of the [redpwn Proof-of-Work (PoW) challenge](https://github.com/redpwn/pow).
+A full Python implementation of the [redpwn Proof-of-Work (PoW) challenge](https://github.com/redpwn/pow).
 
-This package provides a library and CLI for generating, solving, and verifying redpwn-style PoW challenges, commonly used in CTFs and security competitions.
+It creates, solves, and verifies challenges that have the same challenge / solution format as the original redpwn PoW implementation.
 
-> **Reference:** This project is based on and compatible with the original [redpwn/pow](https://github.com/redpwn/pow) implementation and uses the same challenge/solution format.
+This package provides a library to be used in CTF challenges or other applications requiring a PoW mechanism, along with a command-line interface (CLI) for easy interaction.
 
 ---
+
+## Intended usage
+
+Although this package can be used to solve challenges, its primary purpose is to create and verify them within Python-based environments, given the slower performance of arbitrary-precision arithmetic in Python.
+
+We recommend using the [original redpwn PoW CLI](https://github.com/redpwn/pow) to solve challenges in a more performant way, especially for high difficulty levels.
 
 ## Features
 
@@ -20,7 +26,7 @@ This package provides a library and CLI for generating, solving, and verifying r
 - Generate new challenges with configurable difficulty.
 - Solve and verify challenges programmatically or via CLI.
 - MIT licensed and tested with `pytest`.
-- Python 3.11+.
+- No external dependencies.
 
 ## CLI Installation
 
@@ -38,11 +44,35 @@ Install with [uv](https://github.com/astral-sh/uv), [pip](https://pip.pypa.io/),
 uv add git+https://github.com/VaiTon/ctfpow
 ```
 
-## Dependencies
-
-- [gmpy2](https://gmpy2.readthedocs.io/en/latest/)
-
 ## Usage
+
+### Python API
+
+```python
+from ctfpow import (
+    create_challenge, decode_challenge, solve_challenge,
+    verify_solution, Challenge
+)
+
+# Generate a challenge
+challenge = create_challenge(3) # 3: Difficulty level
+challenge_str = str(challenge)
+
+# Solve a challenge
+solution_str = challenge.solve()
+
+# Verify a solution
+valid, error = challenge.check(solution_str)
+assert valid
+
+# Decode from string
+decoded = decode_challenge(challenge_str)
+assert decoded.d == challenge.d
+
+# Convenience functions
+assert verify_solution(challenge_str, solution_str)
+solved = solve_challenge(challenge_str)
+```
 
 ### CLI
 
@@ -82,49 +112,21 @@ ctfpow info "s.<base64-difficulty>.<base64-x>"
 
 ---
 
-### Python API
-
-```python
-from ctfpow import (
-    generate_challenge, decode_challenge, solve_challenge,
-    verify_solution, Challenge
-)
-
-# Generate a challenge
-challenge = generate_challenge(difficulty=3)
-challenge_str = str(challenge)
-
-# Solve a challenge
-solution_str = challenge.solve()
-
-# Verify a solution
-valid, error = challenge.check(solution_str)
-assert valid
-
-# Decode from string
-decoded = decode_challenge(challenge_str)
-assert decoded.d == challenge.d
-
-# Convenience functions
-assert verify_solution(challenge_str, solution_str)
-solved = solve_challenge(challenge_str)
-```
-
----
-
 ## Testing
 
 Run all tests with:
 
 ```sh
 uv run pytest
+# or, with coverage
+uv run pytest --cov
 ```
+
+---
 
 ## License
 
-This project is licensed under the MIT License.
-
-See the [LICENSE](./LICENSE) or the SPDX headers in each file.
+This project complies with the REUSE 3.3 specification. Unless otherwise noted, the code in this repository is licensed under the MIT License.
 
 ## Credits
 
