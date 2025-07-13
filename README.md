@@ -22,24 +22,25 @@ This package provides a library and CLI for generating, solving, and verifying r
 - MIT licensed and tested with `pytest`.
 - Python 3.11+.
 
----
+## CLI Installation
+
+This package provides a command-line interface (CLI) for easy interaction with the PoW challenges. You can create, solve, verify, and inspect challenges directly from your terminal.
+
+```shell
+uv tool install git+https://github.com/VaiTon/ctfpow
+```
 
 ## Installation
 
 Install with [uv](https://github.com/astral-sh/uv), [pip](https://pip.pypa.io/), or your preferred tool:
 
 ```sh
-uv pip install .
-# or
-pip install .
+uv add git+https://github.com/VaiTon/ctfpow
 ```
 
-**Dependencies:**
+## Dependencies
 
-- [gmpy2](https://pypi.org/project/gmpy2/) (for fast modular arithmetic)
-- [pytest](https://pypi.org/project/pytest/) (for testing, optional)
-
----
+- [gmpy2](https://gmpy2.readthedocs.io/en/latest/)
 
 ## Usage
 
@@ -116,14 +117,8 @@ solved = solve_challenge(challenge_str)
 Run all tests with:
 
 ```sh
-uv test
-# or
-pytest
+uv run pytest
 ```
-
-All tests are located in `tests/` and use `pytest` style.
-
----
 
 ## License
 
@@ -131,24 +126,6 @@ This project is licensed under the MIT License.
 
 See the [LICENSE](./LICENSE) or the SPDX headers in each file.
 
----
-
 ## Credits
 
-- **Author:** Eyad Issa (VaiTon) <eyadlorenzo@gmail.com>
 - **Original redpwn PoW:** https://github.com/redpwn/pow
-- **Python implementation:** https://github.com/VaiTon/ctfpow
-
----
-
-## Changelog
-
-- 0.1.0: Initial release with CLI and Python API.
-
----
-
-## Security
-
-If you find a security issue, please open an issue or contact the author directly.
-
----
